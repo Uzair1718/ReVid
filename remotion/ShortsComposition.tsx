@@ -2,21 +2,24 @@ import React from 'react';
 import { AbsoluteFill, Audio, OffthreadVideo, useVideoConfig } from 'remotion';
 import { Captions } from './Captions';
 import { Word } from '@/store/useProjectStore';
+import { z } from 'zod';
 
-interface ShortsCompositionProps {
-    videoSrc: string;
-    captions: Word[];
-    title: string;
-    clipStart: number; // in seconds
-    captionStyle: 'pop' | 'bounce' | 'slide' | 'neon' | 'fade';
-    captionColor: string;
-    bgMusicUrl?: string;
-    bgMusicVolume?: number;
-    voiceoverUrl?: string;
-    brightness?: number;
-    contrast?: number;
-    saturation?: number;
-}
+export const shortsSchema = z.object({
+    videoSrc: z.string(),
+    captions: z.array(z.any()), // Using z.any() for complex Word type for now to avoid deep schema definition
+    title: z.string(),
+    clipStart: z.number(),
+    captionStyle: z.enum(['pop', 'bounce', 'slide', 'neon', 'fade']),
+    captionColor: z.string(),
+    bgMusicUrl: z.string().optional(),
+    bgMusicVolume: z.number().optional(),
+    voiceoverUrl: z.string().optional(),
+    brightness: z.number().optional(),
+    contrast: z.number().optional(),
+    saturation: z.number().optional(),
+});
+
+type ShortsCompositionProps = z.infer<typeof shortsSchema>;
 
 export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
     videoSrc,

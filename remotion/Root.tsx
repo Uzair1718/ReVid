@@ -16,7 +16,10 @@ export const RemotionRoot: React.FC = () => {
                 defaultProps={{
                     videoSrc: "",
                     captions: [],
-                    title: "My Viral Short"
+                    title: "My Viral Short",
+                    clipStart: 0,
+                    captionStyle: 'pop',
+                    captionColor: '#ffffff'
                 }}
             />
         </>
