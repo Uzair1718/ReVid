@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+venv
+__pycache__
+*.pyc
+.env.local
+.env
+downloads
+public/downloads/*
+!public/downloads/.gitkeep
