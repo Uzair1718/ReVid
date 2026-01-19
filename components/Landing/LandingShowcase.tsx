@@ -14,22 +14,22 @@ export const LandingShowcase = () => {
                             <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">Interactive Editor</span>
                         </div>
                         <h2 className="text-4xl md:text-5xl font-black text-white mb-6 leading-tight">
-                            Edit like a Pro, <br />
-                            <span className="text-purple-400">Without the learning curve.</span>
+                            Powered by <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">Gemini 1.5 Pro</span>, <br />
+                            <span className="text-slate-400">Video creation reimagined.</span>
                         </h2>
                         <p className="text-slate-300 text-lg mb-8 leading-relaxed">
-                            Our intuitive dashboard gives you granular control over every aspect of your video. Adjust captions, change styles, and export in seconds.
+                            Our intuitive dashboard grants you the power of Google's most capable AI. Generate scripts, visualize concepts, and edit shorts in seconds.
                         </p>
 
                         <ul className="space-y-4 mb-10">
                             {[
-                                'Real-time preview of all changes',
-                                'Drag-and-drop timeline editor',
-                                'One-click aspect ratio conversion',
-                                'Export in 4K quality'
+                                'Gemini-Powered Script Generation',
+                                'AI-Driven Visual Storytelling',
+                                'Real-time Preview & Editing',
+                                'Export in 4K Quality'
                             ].map((item, i) => (
                                 <li key={i} className="flex items-center gap-3 text-slate-300">
-                                    <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
+                                    <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
                                         <Check className="w-3 h-3" />
                                     </div>
                                     {item}
