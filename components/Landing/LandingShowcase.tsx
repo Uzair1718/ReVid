@@ -48,31 +48,23 @@ export const LandingShowcase = () => {
                             <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-black opacity-50" />
 
                             {/* Simulated UI */}
-                            <div className="absolute inset-0 p-6 flex flex-col">
-                                <div className="h-8 w-full flex items-center gap-2 mb-4">
-                                    <div className="w-3 h-3 rounded-full bg-red-500" />
-                                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                                    <div className="w-3 h-3 rounded-full bg-green-500" />
-                                </div>
-                                <div className="flex-1 flex gap-4">
-                                    <div className="w-1/4 bg-white/5 rounded-xl animate-pulse" />
-                                    <div className="flex-1 bg-white/5 rounded-xl relative overflow-hidden">
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center">
-                                                <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[20px] border-l-white border-b-[10px] border-b-transparent ml-1" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="w-1/4 bg-white/5 rounded-xl flex flex-col gap-2">
-                                        {[1, 2, 3, 4].map(i => (
-                                            <div key={i} className="h-12 bg-white/5 rounded-lg" />
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="h-24 mt-4 bg-white/5 rounded-xl flex items-center px-4 gap-2">
-                                    <div className="h-16 w-1 bg-purple-500 rounded-full" />
-                                    <div className="flex-1 h-12 bg-purple-500/20 rounded-lg" />
-                                </div>
+                            {/* Video Demo */}
+                            <div className="absolute inset-0 bg-slate-900">
+                                <video
+                                    className="w-full h-full object-cover"
+                                    autoPlay
+                                    loop
+                                    muted
+                                    playsInline
+                                    poster="/dashboard-preview.jpg"
+                                >
+                                    {/* Placeholder video - User to replace src */}
+                                    <source src="/demo.mp4" type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                </video>
+
+                                {/* Overlay gradient for better text readability if needed, or just polish */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 to-transparent pointer-events-none" />
                             </div>
                         </div>
 
