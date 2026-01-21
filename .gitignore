@@ -42,6 +42,7 @@ next-env.d.ts
 
 /lib/generated/prisma
 *-player-script.js
+*.py
 
 # Downloads
 public/downloads/*
