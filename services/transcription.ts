@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
-import { AssemblyAI } from 'assemblyai';
+import Groq from 'groq-sdk';
 
 export interface TranscriptionResult {
     text: string;
@@ -9,44 +9,44 @@ export interface TranscriptionResult {
     isFallback: boolean;
 }
 
-// AssemblyAI Cloud Transcription (Free: 5 hours/month)
-async function transcribeWithAssemblyAI(mediaPath: string): Promise<TranscriptionResult> {
-    const apiKey = process.env.ASSEMBLYAI_API_KEY;
+// Groq Cloud Transcription (100% FREE, Unlimited!)
+async function transcribeWithGroq(mediaPath: string): Promise<TranscriptionResult> {
+    const apiKey = process.env.GROQ_API_KEY;
 
     if (!apiKey) {
-        console.warn("AssemblyAI API key not found. Using fallback.");
+        console.warn("Groq API key not found. Using fallback.");
         return { text: "No transcription API configured", words: [], isFallback: true };
     }
 
     try {
-        const client = new AssemblyAI({ apiKey });
+        const groq = new Groq({ apiKey });
 
-        console.log("Uploading to AssemblyAI...");
-        const transcript = await client.transcripts.transcribe({
-            audio: mediaPath,
-            word_boost: ['AI', 'YouTube', 'video'],
-            language_code: 'en'
+        console.log("Transcribing with Groq Whisper API...");
+
+        // Read the audio file
+        const audioFile = fs.createReadStream(mediaPath);
+
+        const transcription = await groq.audio.transcriptions.create({
+            file: audioFile,
+            model: "whisper-large-v3-turbo",
+            response_format: "verbose_json",
+            timestamp_granularities: ["word"]
         });
 
-        if (transcript.status === 'error') {
-            console.error("AssemblyAI Error:", transcript.error);
-            return { text: "", words: [], isFallback: true };
-        }
-
-        // Convert AssemblyAI word format to our format
-        const words = (transcript.words || []).map(w => ({
-            word: w.text,
-            start: w.start / 1000, // Convert ms to seconds
-            end: w.end / 1000
+        // Extract word-level timestamps
+        const words = (transcription.words || []).map((w: any) => ({
+            word: w.word,
+            start: w.start,
+            end: w.end
         }));
 
         return {
-            text: transcript.text || "",
+            text: transcription.text || "",
             words,
             isFallback: false
         };
-    } catch (error) {
-        console.error("AssemblyAI transcription failed:", error);
+    } catch (error: any) {
+        console.error("Groq transcription failed:", error.message);
         return { text: "", words: [], isFallback: true };
     }
 }
@@ -129,9 +129,9 @@ export const transcribeAudio = async (mediaPath: string): Promise<TranscriptionR
     // Check if running in serverless/production environment
     const isServerless = process.env.VERCEL || process.env.NETLIFY;
 
-    if (isServerless || process.env.ASSEMBLYAI_API_KEY) {
-        // Use cloud transcription (AssemblyAI)
-        return transcribeWithAssemblyAI(mediaPath);
+    if (isServerless || process.env.GROQ_API_KEY) {
+        // Use cloud transcription (Groq - 100% FREE!)
+        return transcribeWithGroq(mediaPath);
     } else {
         // Use local Whisper for development
         return transcribeWithLocalWhisper(mediaPath);
