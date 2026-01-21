@@ -107,7 +107,7 @@ export const transcribeAudio = async (mediaPath: string): Promise<TranscriptionR
             model: "whisper-large-v3-turbo",
             response_format: "verbose_json",
             timestamp_granularities: ["word"]
-        });
+        }) as any; // Type cast needed for word-level timestamps
 
         // Extract word-level timestamps
         const words = (transcription.words || []).map((w: any) => ({
