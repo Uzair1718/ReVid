@@ -1,0 +1,27 @@
+{
+  "Job": [
+    {
+      "id": "4911dda2-3fb8-49ef-bd8d-70c11bd4084f",
+      "createdAt": "2026-01-20T08:37:32.208Z",
+      "updatedAt": "2026-01-20T08:37:41.162Z",
+      "result": "{\"videoPath\":\"/downloads/simulated.mp4\"}",
+      "type": "VIDEO_GENERATION",
+      "payload": "{\"url\":\"https://www.youtube.com/watch?v=TEST_VIDEO\"}",
+      "status": "COMPLETED",
+      "runAt": "2026-01-20T08:37:32.191Z"
+    }
+  ],
+  "Schedule": [],
+  "EngagementMetric": [
+    {
+      "id": "ab985751-f766-44f4-abaf-5b1b2a6fa87b",
+      "createdAt": "2026-01-20T08:40:20.532Z",
+      "jobId": "test-job-123",
+      "type": "feedback",
+      "value": 95,
+      "score": 95,
+      "summary": "Great pacing and emotional hook at the start",
+      "timestamp": "2026-01-20T08:40:20.531Z"
+    }
+  ]
+}

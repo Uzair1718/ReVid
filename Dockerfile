@@ -1,5 +1,5 @@
 # Base image with Node.js
-FROM node:18-bullseye-slim AS base
+FROM node:22-bookworm-slim AS base
 
 # Install system dependencies (Python, FFmpeg, Build Tools)
 RUN apt-get update && apt-get install -y \
@@ -45,7 +45,7 @@ RUN pip install faster-whisper
 COPY package.json package-lock.json* ./
 
 # Install Node dependencies
-RUN npm ci
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .

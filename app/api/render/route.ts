@@ -51,12 +51,18 @@ export async function POST(req: NextRequest) {
         const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "remotion-"));
         const outputLocation = path.join(tmpDir, "out.mp4");
 
+        // --- AGENTIC BEHAVIOR: Self-Optimization ---
+        const { getOptimalConcurrency } = require('@/services/scaling'); // Lazy import
+        const concurrency = await getOptimalConcurrency();
+        console.log(`Render Pipeline: Using concurrency = ${concurrency} based on system load.`);
+
         await renderMedia({
             composition,
             serveUrl: bundleLocation,
             codec: "h264",
             outputLocation,
             inputProps,
+            concurrency, // Dynamic concurrency
         });
 
         console.log("Render done, reading file...");

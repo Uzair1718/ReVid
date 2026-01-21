@@ -73,9 +73,28 @@ export const analyzeTranscript = async (
         return fallbackStrategy();
     }
 
+    // --- AGENTIC BEHAVIOR: Adaptive Learning (RAG) ---
+    // Fetch successful past clips to guide the model (Few-Shot Prompting)
+    let dynamicGuidance = "";
+    try {
+        const { getTopPerformingClips } = require('./learning'); // Lazy import to avoid cycle if any
+        const topClips = await getTopPerformingClips(3);
+        if (topClips.length > 0) {
+            dynamicGuidance = `
+    Here are examples of high-performing clips from your previous work. Use these as a style guide:
+    ${topClips.map((c: any, i: number) => `- Example ${i + 1}: "${c.reason}" (Virality Score: ${c.score})`).join('\n')}
+    `;
+        }
+    } catch (e) {
+        console.warn("Analysis: Failed to fetch learning data", e);
+    }
+
     const prompt = `
     You are an expert video editor for YouTube Shorts.
     Analyze the following transcript and identify EXACTLY 6 engaging, viral-worthy moments.
+    
+    ${dynamicGuidance}
+
     Criteria:
     - 20-45 seconds long (STRICTLY)
     - Strong opinions, insights, or emotional delivery

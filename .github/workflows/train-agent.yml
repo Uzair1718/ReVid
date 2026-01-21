@@ -1,0 +1,37 @@
+name: Train Agent Memory
+
+on:
+  schedule:
+    # Run every Sunday at midnight
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  train-memory:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Extract Best Clips
+        run: npm run script:extract-memory
+        # Note: You need to implement 'script:extract-memory' in package.json
+        # which would run a script similar to learning.ts but saving to a JSON file
+        # that is committed to the repo for the agent to use in production.
+
+      - name: Commit Memory Updates
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "chore(ai): update agent memory with latest viral clips"
+          file_pattern: "data/agent-memory.json"
