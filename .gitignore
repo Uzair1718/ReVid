@@ -41,3 +41,15 @@ yarn-error.log*
 next-env.d.ts
 
 /lib/generated/prisma
+
+# Downloads
+public/downloads/*
+*.mp4
+*.webm
+*.mov
+
+# Databases
+*.db
+agent-db.json
+*.sqlite
+*.sqlite3
