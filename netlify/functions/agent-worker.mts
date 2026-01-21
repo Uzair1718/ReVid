@@ -1,10 +1,10 @@
-import { schedule } from '@netlify/functions';
+import { schedule, Handler } from '@netlify/functions';
 import { runScheduler } from '../../services/scheduler';
 
 // Define the handler
 // Note: We're importing the logic from our Next.js app services.
 // Netlify's esbuild bundler should handle this relative import.
-const handler = async (event) => {
+const task: Handler = async (event) => {
     console.log("Netlify Cron: Starting scheduler check...");
     try {
         await runScheduler();
@@ -23,4 +23,4 @@ const handler = async (event) => {
 
 // Schedule it to run every minute
 // Cron syntax: "* * * * *"
-export const handler = schedule("* * * * *", handler);
+export const handler = schedule("* * * * *", task);
