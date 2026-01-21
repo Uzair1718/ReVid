@@ -33,6 +33,7 @@
     "zustand": "^5.0.10"
   },
   "devDependencies": {
+    "@netlify/functions": "^5.1.2",
     "@remotion/cli": "^4.0.407",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
