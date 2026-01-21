@@ -1,5 +1,10 @@
-import { bundle } from "@remotion/bundler";
-import { renderMedia, selectComposition } from "@remotion/renderer";
+// import { bundle } from "@remotion/bundler";
+// import { renderMedia, selectComposition } from "@remotion/renderer";
+
+// Mocking Remotion for Netlify Deployment (Size Limit Workaround)
+const bundle = async (args: any) => { throw new Error("Server-side rendering disabled on Netlify due to size limits. Use local or Docker environment."); };
+const selectComposition = async (args: any) => { return {} as any; };
+const renderMedia = async (args: any) => { return; };
 import path from "path";
 import fs from "fs";
 import os from "os";
