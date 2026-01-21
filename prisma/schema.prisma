@@ -33,6 +33,7 @@ model EngagementMetric {
   id        String   @id @default(uuid())
   jobId     String   @unique
   job       Job      @relation(fields: [jobId], references: [id])
+  type      String   // 'feedback', 'page_view'
   views     Int      @default(0)
   likes     Int      @default(0)
   score     Float    @default(0)
