@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
         const bundleLocation = await bundle({
             entryPoint: entry,
-            webpackOverride: (config) => config, // Default webpack config
+            webpackOverride: (config: any) => config, // Default webpack config
         });
 
         console.log("Selecting composition...");
