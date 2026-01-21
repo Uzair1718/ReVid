@@ -34,9 +34,11 @@ model EngagementMetric {
   jobId     String   @unique
   job       Job      @relation(fields: [jobId], references: [id])
   type      String   // 'feedback', 'page_view'
+  value     Int      @default(0) // Generic value for non-specific metrics
   views     Int      @default(0)
   likes     Int      @default(0)
   score     Float    @default(0)
   summary   String?
+  timestamp DateTime @default(now())
   createdAt DateTime @default(now())
 }
