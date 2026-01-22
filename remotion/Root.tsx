@@ -8,7 +8,7 @@ export const RemotionRoot: React.FC = () => {
             <Composition
                 id="ShortsComposition"
                 component={ShortsComposition}
-                durationInFrames={30 * 60} // Default 60 seconds at 30fps
+                durationInFrames={60 * 30} // 60 seconds at 30fps
                 fps={30}
                 width={1080}
                 height={1920}
@@ -18,6 +18,7 @@ export const RemotionRoot: React.FC = () => {
                     captions: [],
                     title: "My Viral Short",
                     clipStart: 0,
+                    clipEnd: 60,
                     captionStyle: 'pop',
                     captionColor: '#ffffff'
                 }}

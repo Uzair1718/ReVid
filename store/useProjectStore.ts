@@ -31,6 +31,7 @@ export interface Clip {
     words: Word[];
     score: number;
     reason: string;
+    language?: 'en' | 'ur' | 'hi' | 'ps'; // Caption language
     theme: {
         captionStyle: 'pop' | 'bounce' | 'slide' | 'neon' | 'fade';
         captionColor: string;
@@ -50,7 +51,8 @@ export interface ProjectState {
     platform: Platform;
     isLoading: boolean;
     loadingStep: string;
-    language: 'en' | 'ur' | 'ps';
+    language: 'en' | 'ur' | 'hi' | 'ps'; // Caption language
+    transcriptionLanguage: 'en' | 'hi' | 'ur'; // Transcription language (for Groq Whisper)
 
     exportSettings: ExportSettings;
 
@@ -61,7 +63,8 @@ export interface ProjectState {
     setClips: (clips: Clip[]) => void;
     setActiveClip: (id: string) => void;
     setPlatform: (platform: Platform) => void;
-    setLanguage: (lang: 'en' | 'ur' | 'ps') => void;
+    setLanguage: (lang: 'en' | 'ur' | 'hi' | 'ps') => void;
+    setTranscriptionLanguage: (lang: 'en' | 'hi' | 'ur') => void;
 
     // Edit Actions
     updateClipTheme: (id: string, theme: Partial<Clip['theme']>) => void;
@@ -83,7 +86,8 @@ export const useProjectStore = create<ProjectState>()(
             platform: 'youtube', // Default
             isLoading: false,
             loadingStep: '',
-            language: 'en', // Default language
+            language: 'en', // Default caption language
+            transcriptionLanguage: 'en', // Default transcription language
 
             exportSettings: {
                 format: 'mp4',
@@ -100,6 +104,7 @@ export const useProjectStore = create<ProjectState>()(
             setPlatform: (platform) => set({ platform }),
 
             setLanguage: (lang) => set({ language: lang }),
+            setTranscriptionLanguage: (lang) => set({ transcriptionLanguage: lang }),
 
             updateClipTheme: (id, theme) => set((state) => ({
                 clips: state.clips.map(c => c.id === id ? { ...c, theme: { ...c.theme, ...theme } } : c)
@@ -141,7 +146,7 @@ export const useProjectStore = create<ProjectState>()(
         }),
         {
             name: 'revid-storage', // name of the item in the storage (must be unique)
-            partialize: (state) => ({ language: state.language }), // persist only language
+            partialize: (state) => ({ language: state.language, transcriptionLanguage: state.transcriptionLanguage }), // persist language settings
         }
     )
 );

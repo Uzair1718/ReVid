@@ -2,7 +2,7 @@ import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 
-export const downloadVideo = async (url: string, outputDir: string) => {
+export const downloadVideo = async (url: string, outputDir: string, onProgress?: (progress: number) => void) => {
     // Clean URL
     const cleanUrl = url.trim();
 
@@ -13,28 +13,46 @@ export const downloadVideo = async (url: string, outputDir: string) => {
     console.log(`Downloading (Best Quality) from: ${cleanUrl} to ${videoPath}`);
 
     return new Promise<{ path: string; duration: number }>((resolve, reject) => {
-        // Use yt-dlp for best quality video+audio merge
+        // Use yt-dlp with parallel fragment downloads for faster speed
         const ytDlp = spawn('yt-dlp', [
             '-f', 'bestvideo+bestaudio/best', // Best video and best audio, merge them
             '--merge-output-format', 'mp4',   // Ensure output is MP4
             '-o', videoPath,                  // Output path
             '--no-playlist',                  // Single video only
-            '--print-json',                   // Print JSON info to get duration (this will be tricky to parse from stdout along with progress, but we can verify file later. Actually let's just create file first)
-            '--no-simulate',
+            '--progress-template', 'download:[%(progress.percentage)s]',  // Parse progress
+            '--socket-timeout', '30',         // Timeout for better error handling
+            '-N', '16',                       // Parallel fragments (16 concurrent)
             cleanUrl
         ]);
 
         let errorData = '';
+        let lastProgress = 0;
 
         ytDlp.stdout.on('data', (data) => {
-            // We could parse JSON output here if we used --print-json, but yt-dlp prints it all at once or messy.
-            // Simplest is to let it finish.
-            console.log(`yt-dlp stdout: ${data}`);
+            const output = data.toString().trim();
+            // Only log non-empty output
+            if (output) {
+                console.log(`yt-dlp: ${output}`);
+            }
+            
+            // Parse progress from output like "download:[45.3%]"
+            const progressMatch = output.match(/download:\[(\d+\.?\d*)%\]/);
+            if (progressMatch) {
+                const progress = Math.min(parseFloat(progressMatch[1]), 99);
+                if (progress > lastProgress) {
+                    lastProgress = progress;
+                    onProgress?.(Math.round(progress));
+                }
+            }
         });
 
         ytDlp.stderr.on('data', (data) => {
+            const errorOutput = data.toString().trim();
             errorData += data.toString();
-            console.log(`yt-dlp stderr: ${data}`);
+            // Only log non-empty stderr
+            if (errorOutput) {
+                console.log(`yt-dlp stderr: ${errorOutput}`);
+            }
         });
 
         ytDlp.on('close', async (code) => {

@@ -9,6 +9,7 @@ import { CaptionEditor } from '@/components/Editor/CaptionEditor';
 import { AdjustmentPanel } from './AdjustmentPanel';
 import { ExportPanel } from './ExportPanel';
 import { AudioPanel } from './AudioPanel';
+import { CommandChat } from './CommandChat';
 import { LayoutGrid, Type, Sliders, Music, Download, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -24,7 +25,7 @@ export const Dashboard = () => {
     // Determine which panel to show on the right
     const renderRightPanel = () => {
         switch (activeTab) {
-            case 'clips': return <Sidebar />; // Reusing Sidebar as the "Clips" panel
+            case 'clips': return <Sidebar />;
             case 'captions': return <CaptionEditor />;
             case 'adjust': return <AdjustmentPanel />;
             case 'audio': return <AudioPanel />;
@@ -101,10 +102,12 @@ export const Dashboard = () => {
                             key={activeClip.id + activeClip.theme.captionStyle + activeClip.theme.captionColor + activeClip.theme.bgMusicVolume}
                             component={ShortsComposition}
                             inputProps={{
-                                videoSrc: sourceVideoPath || videoUrl, // Use local path if available
-                                captions: activeClip.words,
+                                videoSrc: sourceVideoPath || videoUrl,
+                                captions: activeClip.words || [],
                                 title: `Clip ${parseInt(activeClip.id) + 1}`,
                                 clipStart: activeClip.start,
+                                clipEnd: activeClip.end,
+                                language: activeClip.language || 'en',
                                 captionStyle: activeClip.theme.captionStyle,
                                 captionColor: activeClip.theme.captionColor,
                                 bgMusicUrl: activeClip.theme.bgMusicUrl,
@@ -114,7 +117,7 @@ export const Dashboard = () => {
                                 contrast: activeClip.adjustments?.contrast ?? 1,
                                 saturation: activeClip.adjustments?.saturation ?? 1
                             }}
-                            durationInFrames={30 * (activeClip.end - activeClip.start)}
+                            durationInFrames={Math.round(30 * (activeClip.end - activeClip.start))}
                             fps={30}
                             compositionWidth={1080}
                             compositionHeight={1920}
@@ -124,31 +127,9 @@ export const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* Bottom Timeline (Simplified for now) */}
-                <div className="h-32 border-t border-white/10 bg-black/40 backdrop-blur-md p-4 flex flex-col gap-2">
-                    <div className="flex justify-between items-center text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">
-                        <span>Timeline</span>
-                        <span>{clips.length} Clips</span>
-                    </div>
-                    <div className="flex-1 bg-white/5 rounded-lg border border-white/5 relative overflow-hidden flex items-center px-2 gap-1 overflow-x-auto custom-scrollbar">
-                        {clips.map((clip, i) => (
-                            <div
-                                key={clip.id}
-                                className={`
-                                    h-16 rounded-md border transition-all cursor-pointer relative group overflow-hidden flex-shrink-0
-                                    ${activeClipId === clip.id ? 'bg-purple-500/20 border-purple-500 w-48' : 'bg-white/5 border-white/5 w-24 hover:bg-white/10'}
-                                `}
-                                onClick={() => setActiveClip(clip.id)}
-                            >
-                                <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-slate-500 group-hover:text-slate-300">
-                                    Clip {i + 1}
-                                </div>
-                                {activeClipId === clip.id && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500" />
-                                )}
-                            </div>
-                        ))}
-                    </div>
+                {/* Bottom Command Chat Interface */}
+                <div className="h-56 border-t border-white/10 bg-black/40 backdrop-blur-md flex flex-col">
+                    <CommandChat />
                 </div>
             </div>
 

@@ -6,9 +6,16 @@ import { z } from 'zod';
 
 export const shortsSchema = z.object({
     videoSrc: z.string(),
-    captions: z.array(z.any()), // Using z.any() for complex Word type for now to avoid deep schema definition
+    captions: z.array(z.object({
+        word: z.string(),
+        start: z.number(),
+        end: z.number(),
+        highlight: z.boolean().optional()
+    })),
     title: z.string(),
     clipStart: z.number(),
+    clipEnd: z.number().optional(),
+    language: z.enum(['en', 'ur', 'hi', 'ps']).optional(),
     captionStyle: z.enum(['pop', 'bounce', 'slide', 'neon', 'fade']),
     captionColor: z.string(),
     bgMusicUrl: z.string().optional(),
@@ -26,6 +33,8 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
     captions,
     title,
     clipStart,
+    clipEnd,
+    language = 'en',
     captionStyle,
     captionColor,
     bgMusicUrl,
@@ -59,6 +68,7 @@ export const ShortsComposition: React.FC<ShortsCompositionProps> = ({
                     captions={captions}
                     style={captionStyle}
                     color={captionColor}
+                    language={language}
                 />
             </AbsoluteFill>
 

@@ -1,7 +1,7 @@
 import { getSystemMetrics } from './monitor';
 
-export const DEFAULT_CONCURRENCY = 4;
-export const MIN_CONCURRENCY = 1;
+export const DEFAULT_CONCURRENCY = 8; // Increased for faster rendering
+export const MIN_CONCURRENCY = 2;
 
 export async function getOptimalConcurrency(): Promise<number> {
     try {

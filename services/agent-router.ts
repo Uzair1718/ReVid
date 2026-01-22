@@ -2,9 +2,19 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { prisma } from '@/lib/db';
 
 const getModel = () => {
-    const apiKey = process.env.GEMINI_API_KEY!;
-    const genAI = new GoogleGenerativeAI(apiKey);
-    return genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const apiKey = process.env.GEMINI_API_KEY?.trim();
+    if (!apiKey) {
+        throw new Error("GEMINI_API_KEY is not set in environment variables");
+    }
+    try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        console.log("[AGENT-ROUTER] Gemini model initialized successfully");
+        return model;
+    } catch (e) {
+        console.error("[AGENT-ROUTER] Failed to initialize Gemini model:", e);
+        throw e;
+    }
 };
 
 // Available Tools Definition for Gemini

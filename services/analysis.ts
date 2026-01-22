@@ -3,9 +3,19 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 // Initialize Gemini safely inside function or try/catch
 const getModel = () => {
     const apiKey = process.env.GEMINI_API_KEY?.trim();
-    if (!apiKey) return null;
-    const genAI = new GoogleGenerativeAI(apiKey);
-    return genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    if (!apiKey) {
+        console.warn("[ANALYSIS] No GEMINI_API_KEY found in environment");
+        return null;
+    }
+    try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        console.log("[ANALYSIS] Gemini model initialized successfully");
+        return model;
+    } catch (e) {
+        console.error("[ANALYSIS] Failed to initialize Gemini model:", e);
+        return null;
+    }
 };
 
 export interface ViralMoment {
@@ -172,11 +182,25 @@ export const analyzeTranscript = async (
 
         return moments.slice(0, 6); // Ensure max 6
     } catch (error: any) {
-        // Handle specific API key error cleaner
-        if (error.message?.includes("API key not valid") || error.toString().includes("400")) {
-            console.warn("Analysis: Gemini API Key is invalid or expired. Switching to fallback strategy.");
+        // Handle different error types
+        const errorStr = error.toString();
+        const errorMsg = error.message || "";
+        
+        // Check if it's actually an auth error vs other errors
+        const isAuthError = errorMsg.includes("API key") || errorMsg.includes("authentication") || errorMsg.includes("UNAUTHENTICATED");
+        
+        // 400 errors can be various things - not necessarily key issues
+        const isBadRequest = error.status === 400 || errorStr.includes("400");
+        
+        // Actual API key validation errors from Google
+        const isActualKeyError = errorMsg.includes("INVALID_ARGUMENT") || errorMsg.includes("does not have") || errorMsg.includes("permission denied");
+        
+        if (isActualKeyError || (isAuthError && !isBadRequest)) {
+            console.warn("Analysis: Gemini API Key issue detected. Switching to fallback strategy.", errorMsg);
+        } else if (isBadRequest) {
+            console.warn("Analysis: API returned 400. This might be a temporary issue or key problem. Using fallback.", errorMsg);
         } else {
-            console.error("Analysis failed:", error.message || error);
+            console.error("Analysis failed:", errorMsg || error);
         }
 
         return fallbackStrategy();

@@ -50,8 +50,8 @@ async function extractAudio(videoPath: string): Promise<string> {
     });
 }
 
-export const transcribeAudio = async (mediaPath: string): Promise<TranscriptionResult> => {
-    const apiKey = process.env.GROQ_API_KEY;
+export const transcribeAudio = async (mediaPath: string, language: 'en' | 'hi' | 'ur' = 'en'): Promise<TranscriptionResult> => {
+    const apiKey = process.env.GROQ_API_KEY?.trim();
 
     if (!apiKey) {
         console.error("GROQ_API_KEY not found in environment variables!");
@@ -95,9 +95,18 @@ export const transcribeAudio = async (mediaPath: string): Promise<TranscriptionR
             };
         }
 
-        const groq = new Groq({ apiKey });
+        console.log(`[GROQ] Initializing Groq client with API key (${apiKey.slice(0, 10)}...)`);
+        const groq = new Groq({ apiKey, timeout: 60 * 1000 }); // 60 second timeout
 
-        console.log("Transcribing with Groq Whisper API...");
+        // Map language codes to Groq language codes
+        const languageMap: { [key: string]: string } = {
+            'en': 'en',      // English
+            'hi': 'hi',      // Hindi
+            'ur': 'ur'       // Urdu
+        };
+
+        const groqLanguage = languageMap[language] || 'en';
+        console.log(`[GROQ] Transcribing with language: ${language} (Groq code: ${groqLanguage})`);
 
         // Read the audio file
         const audioFile = fs.createReadStream(audioPath);
@@ -105,6 +114,7 @@ export const transcribeAudio = async (mediaPath: string): Promise<TranscriptionR
         const transcription = await groq.audio.transcriptions.create({
             file: audioFile,
             model: "whisper-large-v3-turbo",
+            language: groqLanguage,
             response_format: "verbose_json",
             timestamp_granularities: ["word"]
         }) as any; // Type cast needed for word-level timestamps
@@ -116,7 +126,7 @@ export const transcribeAudio = async (mediaPath: string): Promise<TranscriptionR
             end: w.end
         }));
 
-        console.log(`✓ Transcribed ${words.length} words successfully`);
+        console.log(`✓ Transcribed ${words.length} words in ${language} successfully`);
 
         // Clean up extracted audio file if it was created
         if (audioPath !== mediaPath && fs.existsSync(audioPath)) {
@@ -130,7 +140,25 @@ export const transcribeAudio = async (mediaPath: string): Promise<TranscriptionR
             isFallback: false
         };
     } catch (error: any) {
-        console.error("Groq transcription failed:", error.message);
+        console.error("[GROQ] Transcription error:", {
+            message: error.message,
+            status: error.status,
+            code: error.code,
+            type: error.type,
+            fullError: JSON.stringify(error, null, 2)
+        });
+        
+        // Log specific error types
+        if (error.message?.includes("ECONNREFUSED")) {
+            console.error("[GROQ] Connection refused - Groq API might be unreachable");
+        } else if (error.status === 401 || error.message?.includes("401")) {
+            console.error("[GROQ] Unauthorized - Check your GROQ_API_KEY");
+        } else if (error.status === 429 || error.message?.includes("429")) {
+            console.error("[GROQ] Rate limited - Try again later");
+        } else if (error.message?.includes("timeout")) {
+            console.error("[GROQ] Request timeout - Check your internet connection");
+        }
+        
         return {
             text: "Transcription failed - " + error.message,
             words: [],

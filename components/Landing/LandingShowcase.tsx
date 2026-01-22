@@ -56,7 +56,6 @@ export const LandingShowcase = () => {
                                     loop
                                     muted
                                     playsInline
-                                    poster="/dashboard-preview.jpg"
                                 >
                                     {/* Placeholder video - User to replace src */}
                                     <source src="/demo.mp4" type="video/mp4" />

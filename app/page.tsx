@@ -23,7 +23,10 @@ export default function Home() {
     setActiveClip,
     isLoading,
     setIsLoading,
-    setSourceVideoPath
+    setSourceVideoPath,
+    transcriptionLanguage,
+    setTranscriptionLanguage,
+    loadingStep
   } = useProjectStore();
 
   const [errorMsg, setErrorMsg] = useState('');
@@ -47,45 +50,67 @@ export default function Home() {
       return;
     }
 
-    setIsLoading(true, "Analyzing Video...");
+    setIsLoading(true, "🚀 Downloading Video...");
 
     try {
       const res = await fetch('/api/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: videoUrl }),
+        body: JSON.stringify({ url: videoUrl, transcriptionLanguage, useAgent: true }),
       });
       const result = await res.json();
 
       if (result.success) {
-        setIsLoading(true, 'Formatting Clips...');
+        setIsLoading(true, '🤖 ReVid-Agent Analyzing & Scoring Clips...');
+        await new Promise(resolve => setTimeout(resolve, 500)); // Brief pause for UX
+        
+        console.log('[PAGE] Transcription result:', {
+          text: result.transcription.text?.substring(0, 100),
+          wordCount: result.transcription.words?.length || 0,
+          momentCount: result.moments?.length || 0,
+          isFallback: result.transcription.isFallback
+        });
+        console.log('[PAGE] Full words array:', result.transcription.words);
+        
+        setIsLoading(true, '✨ Formatting Clips with Remotion...');
         setSourceVideoPath(result.videoUrl); // Store local path for rendering
 
         // Map result to Clip objects
-        const newClips = result.moments.map((m: any, i: number) => ({
-          id: i.toString(),
-          start: m.start,
-          end: m.end,
-          score: m.score,
-          reason: m.reason,
-          text: "",
-          words: result.transcription.words
+        const newClips = result.moments.map((m: any, i: number) => {
+          const clipWords = result.transcription.words
             .filter((w: any) => w.start >= m.start && w.end <= m.end)
             .map((w: any) => ({
               ...w,
               start: w.start - m.start,
               end: w.end - m.start
-            })),
-          theme: {
-            captionStyle: 'pop',
-            captionColor: '#ffffff',
-            bgMusicVolume: 0.2,
-            zoomIntensity: 0.5
-          }
-        }));
+            }));
+          
+          console.log(`[CLIP ${i}] Moment: ${m.start}s-${m.end}s, Words: ${clipWords.length}`, clipWords.slice(0, 3));
+          
+          return {
+            id: i.toString(),
+            start: m.start,
+            end: m.end,
+            score: m.score,
+            reason: m.reason,
+            text: "",
+            words: clipWords,
+            theme: {
+              captionStyle: 'pop',
+              captionColor: '#ffffff',
+              bgMusicVolume: 0.2,
+              zoomIntensity: 0.5
+            }
+          };
+        });
 
         setClips(newClips);
         if (newClips.length > 0) setActiveClip('0');
+
+        // Show agent reflection if available
+        if (result.reflection) {
+          console.log('🎯 Agent Reflection:', result.reflection);
+        }
 
       } else {
         alert(result.error);
@@ -108,6 +133,68 @@ export default function Home() {
   // Otherwise, show the Landing Page
   return (
     <main className="min-h-screen bg-black text-white font-sans selection:bg-purple-500/30">
+      {/* Agent Loading Modal */}
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border border-purple-500/30 rounded-3xl p-8 max-w-md w-full mx-4 text-center backdrop-blur-xl"
+          >
+            <div className="mb-6 flex justify-center">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="text-5xl"
+              >
+                🤖
+              </motion.div>
+            </div>
+            
+            <h2 className="text-2xl font-bold text-white mb-3">ReVid-Agent Processing</h2>
+            
+            <motion.div
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+              className="text-lg text-purple-300 font-medium mb-6 h-8"
+            >
+              {loadingStep}
+            </motion.div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.8 }}>
+                  ⚡
+                </motion.div>
+                <span>Downloading video</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.8, delay: 0.2 }}>
+                  🎙️
+                </motion.div>
+                <span>Transcribing audio</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.8, delay: 0.4 }}>
+                  🎬
+                </motion.div>
+                <span>Analyzing & scoring clips</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.8, delay: 0.6 }}>
+                  ✨
+                </motion.div>
+                <span>Formatting for Remotion</span>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-white/10">
+              <p className="text-xs text-slate-400">This may take 1-3 minutes depending on video length</p>
+            </div>
+          </motion.div>
+        </div>
+      )}
+      
       <LandingHeader />
 
       <LandingHero onStart={() => document.getElementById('input-section')?.scrollIntoView({ behavior: 'smooth' })} />
@@ -122,6 +209,31 @@ export default function Home() {
           className="max-w-2xl w-full mx-auto"
         >
           <div className="p-2 bg-white/5 rounded-[2.5rem] shadow-2xl shadow-purple-900/20 border border-white/10 backdrop-blur-3xl relative group hover:border-purple-500/30 transition-all duration-500">
+            {/* Transcription Language Selector */}
+            <div className="px-6 pt-4 pb-2 flex items-center gap-2 border-b border-white/5">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Transcription Language:</span>
+              <div className="flex gap-2">
+                {[
+                  { code: 'en', label: '🇬🇧 English', name: 'English' },
+                  { code: 'hi', label: '🇮🇳 Hindi', name: 'Hindi (Roman)' },
+                  { code: 'ur', label: '🇵🇰 Urdu', name: 'Urdu (Roman)' }
+                ].map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => setTranscriptionLanguage(lang.code as 'en' | 'hi' | 'ur')}
+                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-all border ${
+                      transcriptionLanguage === lang.code
+                        ? 'bg-purple-500/20 border-purple-500 text-purple-300'
+                        : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:border-white/20'
+                    }`}
+                    title={lang.name}
+                  >
+                    {lang.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="flex flex-col md:flex-row gap-2 relative p-2">
               <div className="flex-1 relative flex gap-2">
                 <Input

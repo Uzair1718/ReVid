@@ -33,23 +33,20 @@ export const LandingHero = ({ onStart }: { onStart: () => void }) => {
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight tracking-tight">
-                        Create Viral Shorts <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400">
-                            10x Faster with AI
-                        </span>
+                        Intent → Video → <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">Publish</span>
                     </h1>
 
                     <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed">
-                        Generate captions, B-roll, and transitions automatically. The all-in-one AI video editor used by top creators.
+                        Turn long-form videos into viral shorts using AI commands. <span className="text-purple-300 font-semibold">No timeline. No manual editing. Just speak.</span>
                     </p>
 
                     <div className="flex flex-col md:flex-row items-center justify-center gap-4">
                         <Button
                             size="lg"
                             onClick={onStart}
-                            className="h-16 px-10 rounded-full bg-white text-black hover:bg-slate-200 text-lg font-bold shadow-[0_0_40px_rgba(255,255,255,0.3)] transition-all hover:scale-105 w-full md:w-auto"
+                            className="h-16 px-10 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-lg font-bold shadow-lg shadow-purple-900/30 transition-all hover:scale-105 w-full md:w-auto border-none"
                         >
-                            Try for Free
+                            Create with AI
                             <ArrowRight className="ml-2 w-5 h-5" />
                         </Button>
                         <Button
