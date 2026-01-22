@@ -10,6 +10,12 @@ const nextConfig = {
         }
         return config;
     },
+    // Extend timeout for video processing
+    experimental: {
+        serverActions: {
+            bodySizeLimit: '500mb',
+        },
+    },
 };
 
 module.exports = nextConfig;

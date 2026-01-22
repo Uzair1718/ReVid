@@ -19,9 +19,10 @@ export const downloadVideo = async (url: string, outputDir: string, onProgress?:
             '--merge-output-format', 'mp4',   // Ensure output is MP4
             '-o', videoPath,                  // Output path
             '--no-playlist',                  // Single video only
-            '--progress-template', 'download:[%(progress.percentage)s]',  // Parse progress
+            '--progress-template', 'download:%(progress._default_template)s',  // Use default progress format
             '--socket-timeout', '30',         // Timeout for better error handling
             '-N', '16',                       // Parallel fragments (16 concurrent)
+            '--no-quiet',
             cleanUrl
         ]);
 
@@ -29,17 +30,25 @@ export const downloadVideo = async (url: string, outputDir: string, onProgress?:
         let lastProgress = 0;
 
         ytDlp.stdout.on('data', (data) => {
-            const output = data.toString().trim();
-            // Only log non-empty output
-            if (output) {
-                console.log(`yt-dlp: ${output}`);
-            }
+            const output = data.toString();
+            // Split by lines and filter out [NA] and empty lines
+            const lines = output.split('\n').filter((line: string) => {
+                const trimmed = line.trim();
+                return trimmed && trimmed !== '[NA]' && !trimmed.includes('[NA]');
+            });
             
-            // Parse progress from output like "download:[45.3%]"
-            const progressMatch = output.match(/download:\[(\d+\.?\d*)%\]/);
-            if (progressMatch) {
-                const progress = Math.min(parseFloat(progressMatch[1]), 99);
-                if (progress > lastProgress) {
+            lines.forEach((line: string) => {
+                const trimmed = line.trim();
+                if (trimmed) {
+                    console.log(`yt-dlp: ${trimmed}`);
+                }
+            });
+            
+            // Parse progress - look for percentage patterns like "[10/100]" or "45%"
+            const percentMatch = output.match(/(\d+\.?\d*)%/);
+            if (percentMatch) {
+                const progress = Math.min(parseFloat(percentMatch[1]), 99);
+                if (progress > lastProgress && progress >= 0) {
                     lastProgress = progress;
                     onProgress?.(Math.round(progress));
                 }

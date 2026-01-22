@@ -53,11 +53,25 @@ export default function Home() {
     setIsLoading(true, "🚀 Downloading Video...");
 
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 600000); // 10 minute timeout
+      
       const res = await fetch('/api/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: videoUrl, transcriptionLanguage, useAgent: true }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeout);
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+        setErrorMsg(error.error || `Server error: ${res.status}`);
+        setIsLoading(false);
+        return;
+      }
+
       const result = await res.json();
 
       if (result.success) {
@@ -113,12 +127,13 @@ export default function Home() {
         }
 
       } else {
-        alert(result.error);
+        setErrorMsg(result.error || 'Failed to process video');
+        setIsLoading(false);
       }
     } catch (e) {
-      alert('Error processing video');
-      console.error(e);
-    } finally {
+      const errorMsg = e instanceof Error ? e.message : 'Unknown error';
+      setErrorMsg(`Error processing video: ${errorMsg}`);
+      console.error('Fetch error:', e);
       setIsLoading(false);
     }
   };
@@ -151,38 +166,58 @@ export default function Home() {
               </motion.div>
             </div>
             
-            <h2 className="text-2xl font-bold text-white mb-3">ReVid-Agent Processing</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">ReVid-Agent Processing</h2>
             
             <motion.div
-              animate={{ opacity: [0.5, 1, 0.5] }}
+              animate={{ opacity: [0.6, 1, 0.6] }}
               transition={{ repeat: Infinity, duration: 1.5 }}
-              className="text-lg text-purple-300 font-medium mb-6 h-8"
+              className="text-lg text-purple-300 font-semibold mb-6 h-8 min-h-8"
             >
               {loadingStep}
             </motion.div>
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-3 text-sm text-slate-300">
-                <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.8 }}>
-                  ⚡
+            {/* Dynamic Steps */}
+            <div className="space-y-2.5 mb-6">
+              <div className={`flex items-center gap-3 text-sm transition-colors ${loadingStep?.includes('Download') ? 'text-purple-300 font-semibold' : 'text-slate-400'}`}>
+                <motion.div 
+                  animate={loadingStep?.includes('Download') ? { scale: [1, 1.2, 1] } : {}} 
+                  transition={{ repeat: Infinity, duration: 0.8 }}
+                  className="w-5 text-center"
+                >
+                  {loadingStep?.includes('Download') ? '⚙️' : loadingStep?.includes('Transcrib') || loadingStep?.includes('Analyzing') || loadingStep?.includes('Formatting') ? '✅' : '⏳'}
                 </motion.div>
                 <span>Downloading video</span>
               </div>
-              <div className="flex items-center gap-3 text-sm text-slate-300">
-                <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.8, delay: 0.2 }}>
-                  🎙️
+              
+              <div className={`flex items-center gap-3 text-sm transition-colors ${loadingStep?.includes('Transcrib') ? 'text-purple-300 font-semibold' : 'text-slate-400'}`}>
+                <motion.div 
+                  animate={loadingStep?.includes('Transcrib') ? { scale: [1, 1.2, 1] } : {}} 
+                  transition={{ repeat: Infinity, duration: 0.8 }}
+                  className="w-5 text-center"
+                >
+                  {loadingStep?.includes('Transcrib') ? '🎙️' : loadingStep?.includes('Download') ? '⏳' : loadingStep?.includes('Analyzing') || loadingStep?.includes('Formatting') ? '✅' : '⏳'}
                 </motion.div>
                 <span>Transcribing audio</span>
               </div>
-              <div className="flex items-center gap-3 text-sm text-slate-300">
-                <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.8, delay: 0.4 }}>
-                  🎬
+              
+              <div className={`flex items-center gap-3 text-sm transition-colors ${loadingStep?.includes('Analyzing') ? 'text-purple-300 font-semibold' : 'text-slate-400'}`}>
+                <motion.div 
+                  animate={loadingStep?.includes('Analyzing') ? { scale: [1, 1.2, 1] } : {}} 
+                  transition={{ repeat: Infinity, duration: 0.8 }}
+                  className="w-5 text-center"
+                >
+                  {loadingStep?.includes('Analyzing') ? '🎬' : loadingStep?.includes('Download') || loadingStep?.includes('Transcrib') ? '⏳' : loadingStep?.includes('Formatting') ? '✅' : '⏳'}
                 </motion.div>
                 <span>Analyzing & scoring clips</span>
               </div>
-              <div className="flex items-center gap-3 text-sm text-slate-300">
-                <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.8, delay: 0.6 }}>
-                  ✨
+              
+              <div className={`flex items-center gap-3 text-sm transition-colors ${loadingStep?.includes('Formatting') ? 'text-purple-300 font-semibold' : 'text-slate-400'}`}>
+                <motion.div 
+                  animate={loadingStep?.includes('Formatting') ? { scale: [1, 1.2, 1] } : {}} 
+                  transition={{ repeat: Infinity, duration: 0.8 }}
+                  className="w-5 text-center"
+                >
+                  {loadingStep?.includes('Formatting') ? '✨' : loadingStep?.includes('Download') || loadingStep?.includes('Transcrib') || loadingStep?.includes('Analyzing') ? '⏳' : '⏳'}
                 </motion.div>
                 <span>Formatting for Remotion</span>
               </div>
