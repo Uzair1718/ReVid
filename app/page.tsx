@@ -126,6 +126,9 @@ export default function Home() {
           console.log('🎯 Agent Reflection:', result.reflection);
         }
 
+        // Complete loading
+        setIsLoading(false);
+
       } else {
         setErrorMsg(result.error || 'Failed to process video');
         setIsLoading(false);
